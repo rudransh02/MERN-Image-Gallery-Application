@@ -1,9 +1,9 @@
 // Importing necessary modules and files
-const fs = require('fs');
 const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const imageModel = require('./models/imageModel');
+const fs = require('fs');
 
 
 
@@ -28,25 +28,11 @@ mongoose.connect(databaseURL)
     console.log("Error Connecting With The Database Or Localhost!");
 });
 
-const storage = multer.memoryStorage();
 
-const Upload = multer({ storage: storage }).single('testImage');
-
-
-// // Working with multer module
-//     const Storage = multer.diskStorage({
-//         destination: 'imageUploads',
-//         filename: (request, file, callBack) => {
-//             callBack(null, file.originalname);
-//         }
-//     });
-
-
-//     // Someting undefined - ChatGPT
-//     const Upload = multer({
-//         storage: Storage
-//     })
-//     .single('testImage');
+// Creating a in-memory storage engine for muter to store the so that the files will stored temporarily in the memory rather than being written to any disk
+const storageEngine = multer.memoryStorage();
+// Declaring the storage engine defined above and .single('image') specifies that only a single file with the field name 'image' in the submitted form will be accepted for upload
+const Upload = multer({ storage: storageEngine }).single('image');
 
 
 // Request Logger Middleware
@@ -59,27 +45,39 @@ app.use((request, response, next) => {
 });
 
 
-// GET Request
-app.get('/', (request, response)=> {
-    response.status(200);
-    response.send("GET");
+// Declaring a GET Request in order to fetch all the images from the database
+app.get('/', (request, response) => {
+    imageModel.find()
+    .then((data) => {
+        response.send(data);
+        // response.status(200);
+    })
+    .catch((error) => {
+        console.log(error);
+    });
 });
 
-let myData;
-// POST Request
+
+// Declaring a GET Request in order to retrieve any image using its ID from the database
+app.get('/view-images/:id', (request, response) => {
+    const id = request.params.id;
+    imageModel.findById(id)
+    .then((imageData) => {
+        response.status(200);
+        response.send(imageData);
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+});
+
+
+// Declaring a POST Request in order to upload the images to the database
 app.post('/upload', (request, response) => {
-
-
-
     Upload(request, response, (error) => {
-
-        myData = request.file.buffer;
-        const buffer = Buffer.from(myData, 'base64');
-        fs.writeFileSync('image.jpg', buffer);
-
-        // console.log(myData);
-    // console.log(request.body);
-    // console.log(request.file);
+        // Uncomment the code below to get the image stored in the PWD whenever an image is uploaded
+        // const buffer = Buffer.from(request.file.buffer, 'base64');
+        // fs.writeFileSync('image.jpg', buffer);
 
         if (error)
         {
@@ -87,17 +85,19 @@ app.post('/upload', (request, response) => {
         }
         else
         {
+            // Creating an object of the class imageModel and filling in the data
             const Image = new imageModel({
-                name: request.body.name,
+                name: request.file.originalname,
                 image: {
                     data: request.file.buffer,
                     contentType: 'image/png'
                 }
             });
+            // Saving the object in the MongoDB Atlas database's collection
             Image.save()
             .then(() => {
                 response.status(200);
-                response.send("Upload Successful!")
+                response.send("Image Upload Successful!");
             })
             .catch((error) => {
                 console.log(error);
@@ -107,10 +107,22 @@ app.post('/upload', (request, response) => {
 });
 
 
-// 404 Not Found Request
+// Declaring a DELETE Request to let te user delete images by their ID
+app.delete('/delete-image/:id', (request, response) => {
+    const id = request.params.id;
+    imageModel.findByIdAndDelete(id)
+    .then(() => {
+        response.status(200);
+        response.send("Delete Successful!");
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+});
+
+
+// Declaring a 404 Not Found Request
 app.use((request, response) => {
     response.status(404);
     response.send("Requested URL Not Found!")
 });
-
-
