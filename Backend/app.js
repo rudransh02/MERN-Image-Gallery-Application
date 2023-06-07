@@ -2,8 +2,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const multer = require('multer');
+const cors = require('cors');
 const imageModel = require('./models/imageModel');
-const fs = require('fs');
+// const fs = require('fs');
 
 
 
@@ -13,7 +14,8 @@ const port = 8181;
 const DBname = "MERN";
 const username = 'localhost';
 const password = 'localhost';
-const databaseURL = `mongodb+srv://${username}:${password}@mern.jucmp8x.mongodb.net/${DBname}?retryWrites=true&w=majority`;
+const databaseURL = `mongodb://${username}:${password}@ac-elmtcil-shard-00-00.jucmp8x.mongodb.net:27017,ac-elmtcil-shard-00-01.jucmp8x.mongodb.net:27017,ac-elmtcil-shard-00-02.jucmp8x.mongodb.net:27017/${DBname}?ssl=true&replicaSet=atlas-uvgz9g-shard-0&authSource=admin&retryWrites=true&w=majority`;
+
 
 
 // Connecting to the database and making the server listen
@@ -27,6 +29,12 @@ mongoose.connect(databaseURL)
 .catch(() => {
     console.log("Error Connecting With The Database Or Localhost!");
 });
+
+
+
+// Cross Origin Resource Sharing is a security feature built into browsers that ensures that web pages from one domain are not able to make requests to another domain unless the second domain explicitly allows it so we're allowing it explicitly here
+app.use(cors());
+
 
 
 // Creating a in-memory storage engine for muter to store the so that the files will stored temporarily in the memory rather than being written to any disk

@@ -1,6 +1,6 @@
 import ImageCard from "./ImageCard";
 
-const Images = () => {
+const Images = ({imageData}) => {
     return (
         <div className="images" style={{
             display: 'grid',
@@ -8,13 +8,7 @@ const Images = () => {
             gap: '10px',
             marginTop: '10px'
         }}>
-            <ImageCard />
-            <ImageCard />
-            <ImageCard />
-            <ImageCard />
-            <ImageCard />
-            <ImageCard />
-            <ImageCard />
+            {imageData && imageData.map(Image => <ImageCard Image = {Image} key = {Image._id} />)}
         </div>
     );
 }

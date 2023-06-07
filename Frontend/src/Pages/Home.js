@@ -3,11 +3,11 @@ import Images from "../Components/Images";
 
 
 
-const Home = () => {
+const Home = ({imageData}) => {
     return (
         <div className="home">
             <Navbar />
-            <Images />
+            <Images imageData = {imageData} />
         </div>
     );
 }
